@@ -1,0 +1,469 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/index.css"%}"/>    
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/bootstrap.min.css"%}"/>
+    <link rel="stylesheet" type="text/css" href="{%static "/index/fonts/font-awesome-4.3.0/css/font-awesome.min.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/bootstrap-datetimepicker.min.css"%}"/>
+    <style>
+        .icon {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+ 
+<div class="container" style="font-size:18px">
+    <div style="padding: 20px 0;">
+        <a class="btn btn-primary btn-lg" style="font-size:18px" id="addBtn" target="#addModal">添加用户</a>
+    </div>
+ 
+    <div>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>蓝牙编号</th>                
+                <th>姓名</th>
+                <th>年龄</th>
+                <th>性别</th>
+                <th>家庭地址</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="tb">
+            {% for row in person_list %}
+                <tr nid={{row.id}} id={{row.id}}>
+                    <td na="nid">{{ row.id }}</td>
+                    <td na="user">{{ row.name }}</td>
+                    <td na="age">{{ row.age }}</td>
+                    <td na="gender">{{ row.gender }}</td>
+                    <td na="address">{{ row.address }}</td>
+                    <td>
+                        <a class="glyphicon glyphicon-remove icon del-row"></a><a class="glyphicon glyphicon-tags edit-row" ></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+ 
+        </table>
+    </div>
+</div>
+ 
+<!-- Modal -->
+<div class="modal fade bs-example-modal-lg" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="myModalLabel">添加用户</h4>
+            </div>
+            <div class="modal-body">
+                <form id="fm" class="form-horizontal">
+                    <div class="form-group">
+                        <label for="name" class="col-sm-2 control-label">姓名</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="save_name" placeholder="姓名" >
+                        </div>
+                    </div>
+ 
+                    <div class="form-group">
+                            <label for="birth" class="col-sm-2 control-label">生日</label>
+                            <div class="right col-xs-6 text-left">
+                                <div class="input-group">
+                                  <input type="text" class="form-control form_datetime" id="save_birthday" name="birthday">
+                                  <span class="input-group-addon" id="basic-addon2"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></span>
+                                </div>
+                            </div>
+                    </div>
+ 
+                    <div class="form-group">
+                        <label for="age" class="col-sm-2 control-label">性别</label>
+                        <div class="col-sm-10 radio">
+                            <label class="radio-inline">
+                                <input type="radio" name="save_gender" id="save_gender" value="1"> 男
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio"  name="save_gender" value="0"> 女
+                            </label>
+                        </div>
+                    </div>
+ 
+                    <div class="form-group form-inline">
+                        <label for="address" class="col-sm-2 control-label">住址</label>
+                        <div class="col-sm-6">                        
+                            <span class="city-picker-selector " name="city" id="city-picker-selector" aria-hidden="true"/>
+                        </div>
+                        <input type="text" class="form-control" name="address" id="save_address" placeholder="街道门牌号" >
+                    </div>
+
+                    <div class="form-group">
+                            <label for="mac_address" class="col-sm-2 control-label">蓝牙</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="ble" id="save_ble" placeholder="蓝牙地址" >
+                            </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span id="errorMsg" style="color: red;"></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btnSave">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- Modal -->
+<div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="alert alert-danger" role="alert">
+            <h2>删除用户信息？</h3>
+            <div id="delete-alter" style="font-size:1.7em">...</div>
+            <input style="display: none;" type="text" id="delNid" value="test"/>
+            <br/>
+            <br/>
+            <div>
+                <button type="button" class="btn btn-default" id="delCancel">取消</button>
+                <button id="delConfirm" type="button" class="btn btn-danger">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- Modal -->
+<div class="modal fade bs-example-modal-lg" id="eidtModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="myModalLabel">编辑用户</h4>
+            </div>
+            <div class="modal-body">
+                
+                <form id="fm" class="form-horizontal">
+                    <input type="text" name="nid" style="display: none" id="edit-nid"/>                    
+                    <div class="form-group">
+                        <label for="username" class="col-sm-2 control-label">姓名</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" name="user" placeholder="姓名" id="edit-name">
+                        </div>
+                    </div>
+ 
+                    <div class="form-group">
+                        <label for="birth" class="col-sm-2 control-label">生日</label>
+                        <div class="right col-xs-6 text-left">
+                            <div class="input-group">
+                              <input type="text" class="form-control form_datetime" id="edit-birthday">
+                              <span class="input-group-addon" id="basic-addon2"><span class="glyphicon glyphicon-time" aria-hidden="true"></span></span>
+                            </div>
+                        </div>
+                </div>
+ 
+                    <div class="form-group">
+                        <label for="age" class="col-sm-2 control-label">性别</label>
+                        <div class="col-sm-10 radio">
+                            <label class="radio-inline">
+                                <input type="radio" name="gender" id="edit-gender" value="1"> 男
+                            </label>
+                            <label class="radio-inline">
+                                <input type="radio"  name="gender" value="0"> 女
+                            </label>
+                        </div>
+                    </div>
+ 
+                    <div class="form-group form-inline">
+                        <label for="address" class="col-sm-2 control-label">住址</label>
+                        <div class="col-sm-6">                        
+                            <span class="city-picker-selector " name="city" id="city-picker-selector2" aria-hidden="true"/>
+                        </div>
+                        <input type="text" class="form-control" name="address" id="edit-address" placeholder="街道门牌号" >
+                    </div>
+
+                    <div class="form-group">
+                            <label for="mac_address" class="col-sm-2 control-label">蓝牙</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="ble" id="edit-ble" placeholder="蓝牙地址" readonly="readonly"/>
+                                <input style="display: none;" type="text" id="edit-raw" value="test" readonly="readonly"/>
+                            </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span id="errorMsg" style="color: red;"></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btnEditSave">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{%static "/index/js/jquery.min.js" %}"></script>
+<script src="{%static "/bootstrap/js/bootstrap.min.js"%}"></script>
+<script src="{%static "/bootstrap/js/bootstrap-datetimepicker.min.js"%}"></script>
+<script src="{%static "/bootstrap/js/bootstrap-datetimepicker.zh-CN.js"%}"></script>
+<script src="{%static "/bootstrap/js/citydata.min.js"%}"></script>
+<script src="{%static "/bootstrap/js/cityPicker-1.1.9.js"%}"></script>
+<script>
+    $(function () {
+        bindEvent();    
+        bindDel();
+        bindDelConfirm();
+
+        var save_selector = $('#city-picker-selector').cityPicker({
+				dataJson: cityData,
+				renderMode: true,
+				search: false,
+				autoSelected: true,
+				code: 'cityCode',
+				level: 3,
+				onChoiceEnd: function() {
+					//console.log(this.getCityVal()[0])
+
+				}
+			});
+        var edit_selector = $('#city-picker-selector2').cityPicker({
+				dataJson: cityData,
+				renderMode: true,
+				search: false,
+				autoSelected: true,
+				code: 'cityCode',
+				level: 3,
+				onChoiceEnd: function() {
+					//console.log(this.getCityVal()[0])
+
+				}
+			});
+
+        $('#delCancel').click(function(){
+            $('#delModal').modal('hide');
+        });
+        
+        $('#tb').on('click','.edit-row',function () {
+            $('#eidtModal').modal('show');
+            //1.获取当前行的所有数据
+            // 将数据赋值到对应的对话框的指定位置
+ 
+             $(this).parent().prevAll().each(function () {
+                 // cls_id
+                 var v = $(this).text();
+                 var n = $(this).attr('na');
+                 if(n=='gender'){
+                    // v=True
+                    if(v=='True'){
+                        $('#eidtModal :radio[value="1"]').prop('checked',true);
+                    }else{
+                        $('#eidtModal :radio[value="0"]').prop('checked',true);
+                    }
+                }
+                else if(n=="nid" ) {
+                    // n=age
+                    // v=12
+                    $("#eidtModal input[name='"+ "ble" +"']").val(v);
+                    document.getElementById("edit-raw").value=v;
+                }
+                else if(n=="address"){
+                    var s=v.split(' ');
+                    $("#eidtModal input[name='"+ "address" +"']").val(s[3]);
+                    edit_selector.setCityVal(s[0]+','+s[1]+','+s[2]);                    
+                    
+                }
+                else if(n=="user" ) {
+                    // n=age
+                    // v=12
+                    $("#eidtModal input[name='"+ "user" +"']").val(v);
+                }
+             });
+ 
+ 
+        });
+
+        $('#btnEditSave').click(function () {
+            var postData = {};
+            var name=document.getElementById("edit-name").value;
+            var birthday=document.getElementById("edit-birthday").value;
+            var isman=document.getElementById("edit-gender").checked;
+
+            var city=edit_selector.getCityVal();
+            var edit_city=city[0].name+" "+city[1].name+" "+city[2].name;
+
+            var detail_address=edit_city+" "+document.getElementById("edit-address").value;
+            var ble=document.getElementById("edit-ble").value;
+            var raw=document.getElementById("edit-raw").value;
+        
+            postData={
+                "name":name,
+                "birth":birthday,
+                "address":detail_address,
+                "gender":isman,
+                "ble_mac":ble,
+                "raw":raw,
+            }
+            console.log(postData)
+
+
+            $.ajax({
+                url: '/update_person/',
+                type: 'POST',
+                data: postData,
+                dataType: 'JSON',
+                success:function (arg) {
+                    if(arg.status){
+                        $('#eidtModal').modal('hide');
+                        window.location.reload();
+                    }else{
+                        alert(arg.message);
+                    }
+                }
+            })
+        })
+
+        $('#btnSave').click(function(){
+            var name=document.getElementById("save_name").value;
+            var birthday=document.getElementById("save_birthday").value;
+            var isman=document.getElementById("save_gender").checked;
+            var ble=document.getElementById("save_ble").value;
+
+            var city=save_selector.getCityVal();
+            var cityname=city[0].name+" "+city[1].name+" "+city[2].name;
+
+            address=cityname+" "+document.getElementById("save_address").value;
+            
+            postData={
+                "name":name,
+                "birth":birthday,
+                "address":address,
+                "gender":isman,
+                "ble_mac":ble,
+            }
+            console.log(postData);
+            $.ajax({
+                url: '/add_person/',
+                type: 'POST',
+                data: postData,
+                success:function (arg) {
+                    console.log(arg)
+                    // arg是字符串
+                    // JSON.parse将字符串转换成字典， json.loads
+                    if(arg.status){
+                        /*
+                        postData = {
+                             username: 'asdf',
+                             age:18,
+                             gender: 1,
+                             cls_id: 2
+                        }
+                        自增id  = dict.data
+                         */
+                        //createRow(arg);
+                        $('#addModal').modal('hide');
+                         window.location.reload();
+                    }else {
+                        $('#errorMsg').text(arg.message);
+                    }
+                }
+            })
+
+        });
+
+    });
+    
+    $(function () {  
+        $('#save_birthday').datetimepicker({  
+            minView: "month",
+            language: 'zh-CN',
+            autoclose: true,
+            todayHighlight: true,
+            format: "yyyy-mm-dd",
+            pickerPosition:"bottom-left",
+        });  
+        $('#edit-birthday').datetimepicker({  
+            minView: "month",
+            language: 'zh-CN',
+            autoclose: true,
+            todayHighlight: true,
+            format: "yyyy-mm-dd",
+            pickerPosition:"bottom-left",
+        });  
+    });  
+    function bindDelConfirm() {
+        $('#delConfirm').click(function () {
+            var rowId = document.getElementById('delNid').value;
+            console.log("test",rowId);
+            $.ajax({
+                url: '/del_person/',
+                type: 'GET',
+                data: {'nid': rowId},
+                dataType:'JSON',
+                success:function (arg) {
+                    if(arg.status){
+                        $('tr[nid="'+ rowId+'"]').remove();
+                    }
+                    $('#delModal').modal('hide');
+                }
+            })
+             
+        });
+         
+ 
+    }
+    function bindDel() {
+        $('#tb').on('click','.del-row',function () {
+            var rowId = $(this).parent().parent().attr('nid');
+            var row=document.getElementById(rowId).getElementsByTagName("td");
+            var name=row[1].innerHTML;  
+            document.getElementById("delete-alter").innerHTML="姓名："+name+"<br>"+"蓝牙："+rowId;    
+            $('#delModal').modal('show');
+            document.getElementById('delNid').value=rowId;
+            // 回去当前行的ID
+        })
+    }
+    function bindEvent() {
+        $('#addBtn').click(function () {
+            $('#addModal').modal('show');
+        })
+    }
+
+    function createRow(postData) {
+        var tr = document.createElement('tr');
+ 
+        var tdId = document.createElement('td');
+        tdId.innerHTML = postData.id;
+        $(tr).append(tdId);
+ 
+        var tdUser = document.createElement('td');
+        tdUser.innerHTML = postData.name;
+        $(tr).append(tdUser);
+ 
+        var tdAge = document.createElement('td');
+        tdAge.innerHTML = postData.age;
+        $(tr).append(tdAge);
+ 
+ 
+        var tdGender = document.createElement('td');
+        if(postData.gender == "0"){
+            tdGender.innerHTML = 'False';
+        }else{
+             tdGender.innerHTML = 'True';
+        }
+        tdGender.innerHTML=postData.gender
+        $(tr).append(tdGender);
+ 
+ 
+        var tdClass = document.createElement('td');
+        var text = $('select[name="cls_id"]').find('option[value="'+ postData.cls_id +'"]').text();
+        tdClass.innerHTML = postData.address;
+        $(tr).append(tdClass);
+ 
+        var tdHandle = '<td> <a class="glyphicon glyphicon-remove icon del-row"></a><a class="glyphicon glyphicon-tags edit-row"></a> </td>';
+        $(tr).append(tdHandle);
+ 
+        $('#tb').append(tr);
+    }
+</script>
+</body>
+</html>
+
