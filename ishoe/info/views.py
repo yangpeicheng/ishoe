@@ -48,15 +48,25 @@ def get_index(requests):
     abnormal_state=State.objects.filter(move_flag__gt=0,person__ignore=False)    
     warnings=[]
     for s in abnormal_state:
-        warning=Warning(s.person.name,s.rpi.location,s.move_flag)
+        warning=Warning(s.person.name,s.rpi.location,s.move_flag,s.person.ble_mac)
         warnings.append(warning)
-    models.Heartbeat.objects.filter(time__lt=start).update(flag=True)
-    return render_to_response('index.html',{'states':State.objects.all(),'warnings':warnings,'heartbeats':models.Heartbeat.objects.all()})
+    return render_to_response('indexajax.html',{'states':State.objects.all(),'warnings':warnings})
 
 def ajax_list(requests):
-    print("req")
-    test_dict={"kobe":["room1","0"],"tracy":["room 2","1"]}
-    return JsonResponse(test_dict)
+    start=datetime.datetime.now()+datetime.timedelta(hours=8)-datetime.timedelta(minutes=1)
+    State.objects.filter(time__lt=start).update(move_flag=4)
+    abnormal_state=State.objects.filter(move_flag__gt=0,person__ignore=False)  
+    dict={"state":None,"warning":None}
+    state_dict={}
+    for s in State.objects.all():
+        state_dict[s.person.ble_mac]=[s.person.name,s.rpi.location,s.person.ignore,s.move_flag]
+    dict["state"]=state_dict
+    warnings={}
+    for s in abnormal_state:
+        warnings[s.person.ble_mac]=[s.person.name,s.rpi.location,s.move_flag,s.person.ble_mac]
+    if len(warnings)>0:
+        dict["warning"]=warnings
+    return JsonResponse(dict)
 
 def handle_person(requests):
     all=[]
@@ -81,6 +91,8 @@ def add_person(requests):
             response["message"]="输入了已使用的蓝牙地址！"
         else:
             p=Person.objects.create(name=rname,birth=rbirth,address=raddress,gender=rgender,ble_mac=rble_mac)
+            r=Rpi.objects.all()[0]
+            State.objects.create(person=p,rpi=r,move_flag=0)
             response.update(PersonInfo(rble_mac,rname,rbirth,rgender,raddress).toJson())
             #return PersonInfo(rble_mac,rname,rbirth,rgender,raddress).toJson()
     except Exception as e:
@@ -105,7 +117,7 @@ def update_person(requests):
         rname=requests.POST.get('name')
         rbirth=requests.POST.get('birth')
         raddress=requests.POST.get('address')
-        if requests.POST.get('render')=='true':
+        if requests.POST.get('gender')=='true':
             rgender=True
         else:
             rgender=False
@@ -122,7 +134,11 @@ def update_person(requests):
     return JsonResponse(response)
             
 def handle_device(requests):
-    return render_to_response('device.html',{"device":Rpi.objects.all()})
+    devices=[]
+    for d in Rpi.objects.all():
+        t=models.DeviceState(d.ip,d.location,d.time)
+        devices.append(t)
+    return render_to_response('device.html',{"device":devices})
 
 def add_device(requests):
     response={"status":False,"message":None}
@@ -133,7 +149,8 @@ def add_device(requests):
         if check:
             response["message"]="输入了已使用的IP地址"
         else:
-            Rpi.objects.create(ip=rip,location=rlocation)
+            t=datetime.datetime.now()+datetime.timedelta(hours=8)
+            Rpi.objects.create(ip=rip,location=rlocation,time=t)
             response["status"]=True            
     except Exception as e:
         print(e)

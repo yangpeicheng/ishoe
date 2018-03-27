@@ -31,6 +31,7 @@
             <tr>
                 <th>IP地址</th>                
                 <th>节点位置</th>
+                <th>状态</th>
                 <th>操作</th>
             </tr>
             </thead>
@@ -39,6 +40,13 @@
                 <tr nid={{row.ip}} id={{row.ip}}>
                     <td na="ip">{{ row.ip }}</td>
                     <td na="location">{{ row.location }}</td>
+                    <td na="state">
+                        {%if row.state%}
+                            正常
+                        {%else%}
+                            连接断开
+                        {%endif%}
+                    </td>
                     <td>
                         <a class="glyphicon glyphicon-remove icon del-row"></a><a class="glyphicon glyphicon-tags edit-row" ></a>
                     </td>

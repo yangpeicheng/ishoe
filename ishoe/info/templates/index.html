@@ -22,9 +22,9 @@
 	
 </head>
 <body>
-	<div class="row" style="height:100%">
-		<div class="col-md-4" style="height:100%">
-			<div class="panel panel-danger panel__style">
+	<div class="row" style="height:100%;">
+		<div class="col-md-4 " style="height:100%">
+			<div class="panel panel-danger panel__style ">
 				<div class="panel-heading">
 					<h3 style="font-weight:bold">异常情况</h3>
 				</div>
@@ -34,7 +34,7 @@
 					<div class="panel panel-danger">
 						<div class="panel-heading">
 						<!-- <img src="{%static "/index/img/Alert.png"%}" width="30px" height="30px"/> -->
-							<h4 style="text-align:center;font-weight:bold;color:black">
+							<h4 class="head__style">
 								{{warning.location}}房间的{{warning.name}}老人可能发生离床行为 
 							</h4>
 						</div>
@@ -42,7 +42,7 @@
 					{%else%}
 					<div class="panel panel-warning">
 						<div class="panel-heading" >
-							<h4 style="text-align:center;font-weight:bold;color:black">
+							<h4 class="head__style">
 							检测不到{{warning.name}}老人的传感器，可能在{{warning.location}}房间附近
 							</h4>
 						</div>
@@ -53,27 +53,27 @@
 		</div>
 	</div>
 
-	<div class="col-md-6" style="height:100%">
-	<div id="theGrid" class="panel panel-info panel__style" style="margin-left:-30px;width:815px" >
+	<div class="col-md-8" style="height:100%">
+	<div id="theGrid" class="panel panel-info panel__style" style="margin-left:-30px;" >
 		<div class="panel-heading">
 			<h3 style="font-weight:bold">老人当前状态</h3>
 		</div>
 		<div class="panel-body" style="margin-top:-10px">
 			{%for state in states%}
-				<div class="panel panel-info person__item" style="width:240px">	
+				<div class="panel panel-info person__item" id="{{state.person.ble_mac}}">	
 					<div class="panel-heading">			
-						<h4 style="text-align:center;font-weight:bold;color:black">{{state.person.name}}</h4>
+						<h4 class="head__style">{{state.person.name}}</h4>
 					</div>
 					{%if state.move_flag == 0%}
-					<div class="panel-body ">
+					<div class="panel-body">
 					{%elif state.move_flag == 4%}
 					<div class="panel-body bg-warning">
 					{%else%}
 					<div class="panel-body bg-danger">
 					{%endif%}
 						<!-- <img class="meta__avatar" src="{%static "/index/img/authors/1.png"%}" alt="author01" />  -->
-						<span class="meta__state" >
-							<h4 style="font-weight:bold;color:black">
+						<!-- <span class="meta__state" > -->
+							<h4 class="head__style">
 							{%if state.move_flag == 0%}
 								预测状态：静止
 							{%elif state.move_flag == 4%}
@@ -82,13 +82,13 @@
 								预测状态：离床
 							{%endif%}
 							</h4>
-						</span>
-						<hr>
-						<span class="meta__position">
-							<h4 style="font-weight:bold;color:black">
+						<!-- </span> -->
+							<hr>
+						<!-- <span class="meta__position"> -->
+							<h4 class="head__style">
 							位置：{{state.rpi.location}}房间
 							</h4>
-						</span>
+						<!-- </span> -->
 						<hr>						
 						<div align="right">
 								{%if state.person.ignore%}
@@ -102,35 +102,7 @@
 			{%endfor%}
 		</div>
 	</div>
-	</div>
-
-	<div class="col-md-2" style="height:100%"> 
-		<div class="panel panel-info panel__style" style="margin-left:-20px;">
-			<div class="panel-heading">
-				<h3 style="font-weight:bold">设备状态</h3>
-			</div>
-			<div class="panel-body">
-				{%for heartbeat in heartbeats %}
-					<div class="panel panel-info">
-						<div class="panel-heading">
-							<h4 style="text-align:center;font-weight:bold;color:black"># {{heartbeat.rpi.location}} 树莓派</h4>
-						</div>
-						{%if heartbeat.flag %}
-						<div class="panel-body bg-danger">
-								<h4 style="text-align:center;font-weight:bold;color:black">状态：通信断开</h4>
-						</div>
-						{%else%}
-
-						<div class="panel-body">
-								<h4 style="text-align:center;font-weight:bold;color:black">状态：通信正常</h4>
-							</div>
-						{%endif%}
-					</div>
-				{%endfor%}
-			</div>
-		</div>
-	</div>
-	
+	</div>	
 	</div>
 	
 	{%if warnings%}
@@ -165,8 +137,15 @@
                 }
             });
     	});  
+
+
+
+        var url="/ajax/";
+        $.ajaxSetup({async:true});
 		window.setInterval(function(){
-			window.location.reload()
+            $.getJSON(url,function(json){
+
+            });
 		},1000);
 	</script> 
 </body>

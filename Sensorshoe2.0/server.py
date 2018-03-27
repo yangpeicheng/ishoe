@@ -6,10 +6,11 @@ from DataHandle import *
 import csv
 import os
 from DataBaseManager import DataBaseManager
+import json
 #SERVER_IP = "192.168.1.103"
 #SERVER_IP="localhost"
 #SERVER_IP=socket.gethostbyname(socket.gethostname())
-SERVER_IP="192.168.0.3"
+SERVER_IP="127.0.0.1"
 SERVER_PORT = 9999
 MAX_LINKS = 5
 
@@ -33,7 +34,7 @@ def handle_data(sock, addr):
             database3.insert_heartbeat(addr[0])
             if len(data) > 20:
                 try:
-                    data = eval(data)
+                    data = json.loads(data)
                 except Exception:
                     continue
                 for key in data:
