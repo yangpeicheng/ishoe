@@ -37,4 +37,5 @@ urlpatterns = [
     url(r'^del_device/$',views.del_device),
     url(r'^update_device/$',views.update_device),
     url(r'^change_status/$',views.change_status),
+    url(r'^android/$',views.android_person_info),
 ]+static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

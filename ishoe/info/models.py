@@ -22,6 +22,7 @@ class Person(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Rpi(models.Model):
     ip=models.CharField(max_length=30,default="192.1.2.105",primary_key=True)
     location=models.CharField(max_length=20,default="001")
@@ -62,6 +63,14 @@ class State(models.Model):
     time=models.DateTimeField(default = timezone.now)
     def __unicode__(self):
         return unicode(self.time)
+    
+    def toJson(self):
+        dict={}
+        dict['name']=self.person.name
+        dict['ble']=self.person.ble_mac
+        dict['location']=self.rpi.location
+        dict['state']=self.move_flag
+        return dict
 
 # class Heartbeat(models.Model):
 #     rpi=models.ForeignKey(Rpi,primary_key=True,on_delete=models.CASCADE)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 from django.shortcuts import render,render_to_response
-from django.http import HttpResponseRedirect,JsonResponse
+from django.http import HttpResponseRedirect,JsonResponse,HttpResponse
 from models import Person,State,Warning,PersonInfo,Rpi
 import models
 import datetime
@@ -196,4 +197,14 @@ def change_status(requests):
     except Exception as e:
         print(e)
     return
-    
+
+def android_person_info(requests):
+    start=datetime.datetime.now()+datetime.timedelta(hours=8)-datetime.timedelta(minutes=1)
+    State.objects.filter(time__lt=start).update(move_flag=4)
+    abnormal_state=State.objects.filter(move_flag__gt=0,person__ignore=False)
+    rp=[]
+    for s in State.objects.all():
+        rp.append(s.toJson())
+    # print(rp)
+    # return JsonResponse(rp) 
+    return HttpResponse(json.dumps(rp),content_type="application/json")
