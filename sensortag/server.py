@@ -20,7 +20,7 @@ import json
 #SERVER_IP = "192.168.1.103"
 #SERVER_IP="localhost"
 #SERVER_IP=socket.gethostbyname(socket.gethostname())
-SERVER_IP="192.168.0.3"
+SERVER_IP="172.16.252.248"
 SERVER_PORT = 9999
 MAX_LINKS = 5
 
@@ -90,8 +90,10 @@ def serve():
     print(SERVER_IP, SERVER_PORT)
     while True:
         sock, addr = server.accept()
+	print(addr)
         list=database.select_rpi()
-        # print(list)
+        sock.send("ssss")
+	# print(list)
         if addr[0] in list:
             t = threading.Thread(target=handle_data, args=(sock, addr))
             t.start()

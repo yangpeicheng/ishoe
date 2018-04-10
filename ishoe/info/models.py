@@ -115,7 +115,7 @@ class DeviceState:
     def __init__(self,ip,location,time):
         self.ip=ip
         self.location=location
-        start=datetime.datetime.now()+datetime.timedelta(hours=8)-datetime.timedelta(minutes=1)
-        t=start.replace(tzinfo=pytz.timezone('UTC'))
-        self.state=time>t
+        start=timezone.now()-datetime.timedelta(minutes=1)
+        # t=start.replace(tzinfo=pytz.timezone('UTC'))
+        self.state=time>start
     

@@ -1,0 +1,384 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/index.css"%}"/>    
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/bootstrap.min.css"%}"/>
+    <link rel="stylesheet" type="text/css" href="{%static "/index/fonts/font-awesome-4.3.0/css/font-awesome.min.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/bootstrap-datetimepicker.min.css"%}"/>
+
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/toastr.min.css"%}"/>
+	<script src="{%static "/bootstrap/js/toastr.min.js"%}"></script>
+
+    <style>
+        .icon {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+ 
+<div class="container" style="font-size:18px">
+    <div style="padding: 20px 0;">
+        <a class="btn btn-primary btn-lg" style="font-size:18px" id="addBtn" target="#addModal">添加设备</a>
+    </div>
+ 
+    <div>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>IP地址</th>                
+                <th>节点位置</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="tb">
+            {% for row in device %}
+                <tr nid={{row.ip}} id={{row.ip}}>
+                    <td na="ip">{{ row.ip }}</td>
+                    <td na="location">{{ row.location }}</td>
+                    <td na="state">
+                        {%if row.state%}
+                            正常
+                        {%else%}
+                            连接断开
+                        {%endif%}
+                    </td>
+                    <td>
+                        <a class="glyphicon glyphicon-remove icon del-row"></a><a class="glyphicon glyphicon-tags edit-row" ></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+ 
+        </table>
+    </div>
+</div>
+ 
+<!-- Modal -->
+<div class="modal fade " id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="myModalLabel">添加树莓派节点</h4>
+            </div>
+            <div class="modal-body">
+                <form id="fm" class="form-horizontal">
+                    <div class="form-group">
+                        <label for="ip_address" class="col-sm-2 control-label">IP地址</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="add_ip" placeholder="IP地址" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                            <label for="node_location" class="col-sm-2 control-label">节点位置</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="ble" id="add_location" placeholder="节点位置" >
+                            </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <span id="errorMsg" style="color: red;"></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btnSave">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- Modal -->
+<div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="alert alert-danger" role="alert">
+            <h2>删除设备信息？</h3>
+            <div id="delete-alter" style="font-size:1.7em">...</div>
+            <input style="display: none;" type="text" id="delNid" value="test"/>
+            <br/>
+            <br/>
+            <div>
+                <button type="button" class="btn btn-default" id="delCancel">取消</button>
+                <button id="delConfirm" type="button" class="btn btn-danger">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- Modal -->
+<div class="modal fade " id="eidtModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="myModalLabel">修改树莓派信息</h4>
+            </div>
+            <div class="modal-body">
+                
+                <form id="fm" class="form-horizontal">
+                    <input type="text" name="nid" style="display: none" id="edit-nid"/>                    
+                    <div class="form-group">
+                        <label for="username" class="col-sm-2 control-label">IP地址</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" name="ip" placeholder="" id="edit-ip" readonly="readonly">
+                        </div>
+                    </div>
+ 
+                    <div class="form-group">
+                        <label for="node_location" class="col-sm-2 control-label">节点位置</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" name="location" id="edit-location" placeholder="节点位置" >
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <span id="errorMsg" style="color: red;"></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="btnEditSave">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{%static "/index/js/jquery.min.js" %}"></script>
+<script src="{%static "/bootstrap/js/bootstrap.min.js"%}"></script>
+<script src="{%static "/bootstrap/js/bootstrap-datetimepicker.min.js"%}"></script>
+<script src="{%static "/bootstrap/js/bootstrap-datetimepicker.zh-CN.js"%}"></script>
+<script src="{%static "/bootstrap/js/citydata.min.js"%}"></script>
+<script src="{%static "/bootstrap/js/cityPicker-1.1.9.js"%}"></script>
+
+
+<script>
+    
+    $(function () {
+        bindEvent();    
+        bindDel();
+        bindDelConfirm();
+
+
+        $('#delCancel').click(function(){
+            $('#delModal').modal('hide');
+        });
+        
+        $('#tb').on('click','.edit-row',function () {
+            $('#eidtModal').modal('show');
+            //1.获取当前行的所有数据
+            // 将数据赋值到对应的对话框的指定位置
+            var rowId = $(this).parent().parent().attr('nid');
+            var row=document.getElementById(rowId).getElementsByTagName("td");
+            document.getElementById('edit-ip').value=rowId;
+            document.getElementById('edit-location').value=row[1].innerHTML;
+            document.getElementById('edit-nid').value=rowId;
+ 
+        });
+
+        $('#btnEditSave').click(function () {
+            var postData = {};
+            var ip=document.getElementById("edit-ip").value;
+            var location=document.getElementById("edit-location").value;
+            var raw=document.getElementById("edit-nid").value;
+        
+            postData={
+                "ip":ip,
+                "location":location,
+                "raw":raw,
+            }
+            console.log(postData)
+
+
+            $.ajax({
+                url: '/update_device/',
+                type: 'POST',
+                data: postData,
+                dataType: 'JSON',
+                success:function (arg) {
+                    if(arg.status){
+                        $('#eidtModal').modal('hide');
+                        window.location.reload();
+                    }else{
+                        alert(arg.message);
+                    }
+                }
+            })
+        })
+
+        $('#btnSave').click(function(){
+            var ip=document.getElementById("add_ip").value;
+            var location=document.getElementById("add_location").value;           
+            postData={
+                "ip":ip,
+                "location":location,
+            }
+            console.log(postData);
+            $.ajax({
+                url: '/add_device/',
+                type: 'POST',
+                data: postData,
+                success:function (arg) {
+                    console.log(arg)
+                    // arg是字符串
+                    // JSON.parse将字符串转换成字典， json.loads
+                    if(arg.status){
+                        /*
+                        postData = {
+                             username: 'asdf',
+                             age:18,
+                             gender: 1,
+                             cls_id: 2
+                        }
+                        自增id  = dict.data
+                         */
+                        //createRow(arg);
+                        $('#addModal').modal('hide');
+                         window.location.reload();
+                    }else {
+                        $('#errorMsg').text(arg.message);
+                    }
+                }
+            })
+
+        });
+
+    });
+
+    function bindDelConfirm() {
+        $('#delConfirm').click(function () {
+            var rowId = document.getElementById('delNid').value;
+            console.log("test",rowId);
+            $.ajax({
+                url: '/del_device/',
+                type: 'GET',
+                data: {'ip': rowId},
+                dataType:'JSON',
+                success:function (arg) {
+                    if(arg.status){
+                        //$('tr[nid="'+ rowId+'"]').remove();
+                        window.location.reload();
+                    }
+                    $('#delModal').modal('hide');
+                }
+            })
+             
+        });
+         
+ 
+    }
+    function bindDel() {
+        $('#tb').on('click','.del-row',function () {
+            var rowId = $(this).parent().parent().attr('nid');
+            var row=document.getElementById(rowId).getElementsByTagName("td");
+            var location=row[1].innerHTML;  
+            document.getElementById("delete-alter").innerHTML="IP地址："+rowId+"<br>"+"节点位置："+location;    
+            $('#delModal').modal('show');
+            document.getElementById('delNid').value=rowId;
+            // 回去当前行的ID
+        })
+    }
+    function bindEvent() {
+        $('#addBtn').click(function () {
+            $('#addModal').modal('show');
+        })
+    }
+    function bindSave() {
+ 
+        $('#btnSave').click(function () {
+            var postData = {};
+            $('#addModal').find('input,select').each(function () {
+                var v = $(this).val();
+                var n = $(this).attr('name');
+                if(n=='gender'){
+                    if($(this).prop('checked')){
+                        postData[n] = v;
+                    }
+                }else{
+                    postData[n] = v;
+                }
+            });
+            $('#')
+ 
+            /*
+            postData = {
+                 username: 'asdf',
+                 age:18,
+                 gender: 1,
+                 cls_id: 2
+            }
+             */
+ 
+            $.ajax({
+                url: '/add_student/',
+                type: 'POST',
+                data: postData,
+                success:function (arg) {
+                    // arg是字符串
+                    // JSON.parse将字符串转换成字典， json.loads
+                    var dict = JSON.parse(arg);
+                    if(dict.status){
+                        /*
+                        postData = {
+                             username: 'asdf',
+                             age:18,
+                             gender: 1,
+                             cls_id: 2
+                        }
+                        自增id  = dict.data
+                         */
+                        createRow(postData,dict.data);
+                        $('#addModal').modal('hide');
+                        // window.location.reload();
+                    }else {
+                        $('#errorMsg').text(dict.message);
+                    }
+                }
+            })
+ 
+        });
+    }
+
+    function createRow(postData) {
+        var tr = document.createElement('tr');
+ 
+        var tdId = document.createElement('td');
+        tdId.innerHTML = postData.id;
+        $(tr).append(tdId);
+ 
+        var tdUser = document.createElement('td');
+        tdUser.innerHTML = postData.name;
+        $(tr).append(tdUser);
+ 
+        var tdAge = document.createElement('td');
+        tdAge.innerHTML = postData.age;
+        $(tr).append(tdAge);
+ 
+ 
+        var tdGender = document.createElement('td');
+        if(postData.gender == "0"){
+            tdGender.innerHTML = 'False';
+        }else{
+             tdGender.innerHTML = 'True';
+        }
+        tdGender.innerHTML=postData.gender
+        $(tr).append(tdGender);
+ 
+ 
+        var tdClass = document.createElement('td');
+        var text = $('select[name="cls_id"]').find('option[value="'+ postData.cls_id +'"]').text();
+        tdClass.innerHTML = postData.address;
+        $(tr).append(tdClass);
+ 
+        var tdHandle = '<td> <a class="glyphicon glyphicon-remove icon del-row"></a><a class="glyphicon glyphicon-tags edit-row"></a> </td>';
+        $(tr).append(tdHandle);
+ 
+        $('#tb').append(tr);
+    }
+</script>
+</body>
+</html>
+

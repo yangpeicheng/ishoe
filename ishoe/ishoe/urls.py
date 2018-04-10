@@ -38,4 +38,6 @@ urlpatterns = [
     url(r'^update_device/$',views.update_device),
     url(r'^change_status/$',views.change_status),
     url(r'^android/$',views.android_person_info),
+    url(r'^rpipost/$',views.rpi_post),
+    url(r'^taglist/$',views.get_taglist),
 ]+static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -5,9 +5,12 @@ import json
 from django.shortcuts import render,render_to_response
 from django.http import HttpResponseRedirect,JsonResponse,HttpResponse
 from models import Person,State,Warning,PersonInfo,Rpi
+from django.utils import timezone
 import models
 import datetime
 # Create your views here.
+TAG_LIST=[]
+FRESH=True
 def state_list(requests):
     return render_to_response('sum.html',)
 
@@ -16,6 +19,14 @@ def uploadImg(requests):
 
 def info_detail(requests):
     return render_to_response('sign-up.html')
+
+def updateTagList():
+    global TAG_LIST
+    TAG_LIST=[]
+    for p in Person.objects.all():
+        TAG_LIST.append(p.ble_mac)
+    return TAG_LIST
+
 
 def submit(requests):
     errors=[]
@@ -44,7 +55,7 @@ def get_left(requests):
     return render_to_response('left.html')
 
 def get_index(requests):
-    start=datetime.datetime.now()+datetime.timedelta(hours=8)-datetime.timedelta(minutes=1)
+    start=timezone.now()-datetime.timedelta(minutes=1)
     State.objects.filter(time__lt=start).update(move_flag=4)
     abnormal_state=State.objects.filter(move_flag__gt=0,person__ignore=False)    
     warnings=[]
@@ -54,7 +65,7 @@ def get_index(requests):
     return render_to_response('indexajax.html',{'states':State.objects.all(),'warnings':warnings})
 
 def ajax_list(requests):
-    start=datetime.datetime.now()+datetime.timedelta(hours=8)-datetime.timedelta(minutes=1)
+    start=timezone.now()-datetime.timedelta(minutes=1)
     State.objects.filter(time__lt=start).update(move_flag=4)
     abnormal_state=State.objects.filter(move_flag__gt=0,person__ignore=False)  
     dict={"state":None,"warning":None}
@@ -76,6 +87,7 @@ def handle_person(requests):
     return render_to_response('person.html',{'person_list':all})
 
 def add_person(requests):
+    global FRESH
     response={"status":True,"message":None}
     try:
         rname=requests.POST.get('name')
@@ -95,6 +107,7 @@ def add_person(requests):
             r=Rpi.objects.all()[0]
             State.objects.create(person=p,rpi=r,move_flag=0)
             response.update(PersonInfo(rble_mac,rname,rbirth,rgender,raddress).toJson())
+            FRESH=True
             #return PersonInfo(rble_mac,rname,rbirth,rgender,raddress).toJson()
     except Exception as e:
         response["status"]=False
@@ -102,11 +115,13 @@ def add_person(requests):
     return JsonResponse(response)
 
 def delete_person(requests):
+    global FRESH
     response={'status':False}
     try:
         nid=requests.GET.get('nid')
         Person.objects.filter(ble_mac=nid).delete()
         response['status']=True
+        FRESH=True
         #print(nid)
     except Exception as e:
         response={'status':False}
@@ -150,7 +165,7 @@ def add_device(requests):
         if check:
             response["message"]="输入了已使用的IP地址"
         else:
-            t=datetime.datetime.now()+datetime.timedelta(hours=8)
+            t=timezone.now()
             Rpi.objects.create(ip=rip,location=rlocation,time=t)
             response["status"]=True            
     except Exception as e:
@@ -199,7 +214,7 @@ def change_status(requests):
     return
 
 def android_person_info(requests):
-    start=datetime.datetime.now()+datetime.timedelta(hours=8)-datetime.timedelta(minutes=1)
+    start=timezone.now()-datetime.timedelta(minutes=1)
     State.objects.filter(time__lt=start).update(move_flag=4)
     abnormal_state=State.objects.filter(move_flag__gt=0,person__ignore=False)
     rp=[]
@@ -208,3 +223,50 @@ def android_person_info(requests):
     # print(rp)
     # return JsonResponse(rp) 
     return HttpResponse(json.dumps(rp),content_type="application/json")
+
+def rpi_post(requests):
+    global FRESH
+    response={"status":False}
+    post=requests.POST.keys()[0]
+    post=json.loads(post)
+    try:
+        ip=post['ip']
+        id=post['id']
+        status=post['status']
+        # print(ip,id)
+        p=Person.objects.get(ble_mac=id)
+	r=Rpi.objects.get(ip=ip)
+	#print(p)
+        # t=datetime.datetime.now()+datetime.timedelta(hours=8)
+        t=timezone.now()
+	if len(State.objects.filter(person=p))==0:
+	    State.objects.create(person=p,rpi=r,move_flag=status,time=t)
+	else:
+            State.objects.filter(person=p).update(move_flag=status,time=t,rpi=r)
+        response["status"]=True
+        if FRESH==True:
+            FRESH=False
+            updateTagList()
+            # response["update"]=True
+            # response["data"]=TAG_LIST
+    except Exception as e:
+        print(e)
+    # print(response)
+    return HttpResponse(json.dumps(response),content_type="application/json")
+
+def get_taglist(requests):
+    global FRESH
+    ip=requests.POST.keys()[0]
+    try:
+    	r=Rpi.objects.filter(ip=ip)
+	if r:
+	    r.update(time=timezone.now())
+    except Exception as e:
+	print(e)
+#    if len(TAG_LIST)==0 or FRESH==True:
+#        updateTagList()
+#        FRESH=False
+    # print(json.dumps(TAG_LIST))
+#    print(TAG_LIST)
+    l=updateTagList()
+    return HttpResponse(json.dumps(l),content_type="application/json")

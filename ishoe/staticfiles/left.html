@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>iShoe</title>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="{%static "/index/css/public.css" %}" />
+    <script src="{%static "/index/js/jquery.min.js" %}"></script>
+	<script src="{%static "/index/js/public.js" %}"></script>
+</head>
+
+<!-- <ul class="nav nav-pills nav-stacked">
+		<li class="active">
+			<a href="#" class="glyphicon glyphicon-home">Home</a>
+		</li>
+		<li><a href="#">SVN</a></li>
+		<li><a href="#">iOS</a></li>
+		<li><a href="#">VB.Net</a></li>
+		<li><a href="#">Java</a></li>
+		<li><a href="#">PHP</a></li>
+</ul> -->
+
+<body id="bg">
+    <div class="container">
+		<div class="leftsidebar_box">
+			<dl class="system_log">
+				<dt>
+					<img class="icon1" src="{%static "/index/img/blueheart64.png" %}" />
+					<img class="icon2" src="{%static "/index/img/greyheart64.png" %}" />智慧养老
+				</dt>
+				<dd>
+					<img class="coin11" src="{%static "/index/img/bpoint.png" %}"/>
+					<img class="coin22"	src="{%static "/index/img/gpoint.png" %}"/>
+					<a class="cks" href="/index" target="main">离床检测</a>
+				</dd>
+			</dl>
+			<dl class="system_log">
+				<dt>
+                    <img class="icon1" src="{%static "/index/img/bluepeople64.png" %}" />
+                    <img class="icon2" src="{%static "/index/img/greypeople64_2.png" %}" />信息管理
+				</dt>
+				<dd>
+                    <img class="coin11" src="{%static "/index/img/bpoint.png" %}"/>
+                    <img class="coin22"	src="{%static "/index/img/gpoint.png" %}"/>
+					<a class="cks" href="/person" target="main">添加用户</a>
+				</dd>
+			</dl>
+			<dl class="system_log">
+				<dt>
+					<img class="icon1" src="{%static "/index/img/sblue64.png" %}" />
+					<img class="icon2"src="{%static "/index/img/sgrey64.png" %}" />设备管理
+				</dt>
+				<!-- <dd>
+					<img class="coin11" src="{%static "/index/img/bpoint.png" %}"/>
+					<img class="coin22" src="{%static "/index/img/gpoint.png"%}" />
+					<a class="cks" href="/sign-up" target="main">SensorTag</a>
+                </dd> -->
+                <dd>
+					<img class="coin11" src="{%static "/index/img/bpoint.png" %}"/>
+					<img class="coin22" src="{%static "/index/img/gpoint.png"  %}"/>
+					<a class="cks" href="/device" target="main">树莓派</a>
+				</dd>
+			</dl>
+		</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,280 @@
+{% load static %}
+<!doctype html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>用户状态</title>
+	<link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/bootstrap.min.css"%}" />
+	<link rel="stylesheet" type="text/css" href="{%static "/index/css/normalize.css"%}" />
+	<link rel="stylesheet" type="text/css" href="{%static "/index/css/default.css"%}"/>
+	<link rel="stylesheet" type="text/css" href="{%static "/index/fonts/font-awesome-4.3.0/css/font-awesome.min.css" %}"/>
+	<link rel="stylesheet" type="text/css" href="{%static "/index/css/style1.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/toastr.min.css"%}"/>
+	<link rel="stylesheet" type="text/css" href="{%static "/bootstrap/css/bootstrap-switch.min.css"%}"/>
+	<!-- <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'/> -->
+	<script src="{%static "/index/js/jquery.min.js" %}"></script>
+	<script src="{%static "/bootstrap/js/bootstrap.min.js" %}"></script>
+	<script src="{%static "/index/js/modernizr.custom.js" %}"></script>
+	<script src="{%static "/bootstrap/js/toastr.min.js"%}"></script>
+	<script src="{%static "/bootstrap/js/bootstrap-switch.min.js"%}"></script>
+	
+</head>
+<body>
+	<div class="row" style="height:100%;">
+		<div class="col-md-4 " style="height:100%">
+			<div class="panel panel-danger panel__style ">
+				<div class="panel-heading">
+					<h3 style="font-weight:bold">异常情况</h3>
+				</div>
+				<div class="panel-body" id="warnpl">
+				{%for warning in warnings%}	
+					{% ifnotequal warning.type 4%}
+					<div class="panel panel-danger" id="warning{{warning.id}}">
+						<div class="panel-heading">
+						<!-- <img src="{%static "/index/img/Alert.png"%}" width="30px" height="30px"/> -->
+							<h4 class="head__style" id="warninghead{{warning.id}}">
+								{{warning.location}}房间的{{warning.name}}老人可能发生离床行为 
+							</h4>
+						</div>
+					</div>	
+					{%else%}
+					<div class="panel panel-warning" id="warning{{warning.id}}">
+						<div class="panel-heading" >
+							<h4 class="head__style" id="warninghead{{warning.id}}">
+							检测不到{{warning.name}}老人的传感器，可能在{{warning.location}}房间附近
+							</h4>
+						</div>
+					</div>			
+					{%endifnotequal%}
+				{%endfor%}
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-8" style="height:100%">
+	<div id="theGrid" class="panel panel-info panel__style" style="margin-left:-30px;" >
+		<div class="panel-heading">
+			<h3 style="font-weight:bold">老人当前状态</h3>
+		</div>
+		<div class="panel-body" style="margin-top:-10px" id="p1">
+			{%for state in states%}
+				<div class="panel panel-info person__item" id="item{{state.person.ble_mac}}">	
+					<div class="panel-heading">			
+						<h4 class="head__style" id="head{{state.person.ble_mac}}">{{state.person.name}}</h4>
+					</div>
+					{%if state.move_flag == 0%}
+					<div class="panel-body" id="body{{state.person.ble_mac}}">
+					{%elif state.move_flag == 4%}
+					<div class="panel-body bg-warning" id="body{{state.person.ble_mac}}">
+					{%else%}
+					<div class="panel-body bg-danger" id="body{{state.person.ble_mac}}">
+					{%endif%}
+						<!-- <img class="meta__avatar" src="{%static "/index/img/authors/1.png"%}" alt="author01" />  -->
+							<h4 class="head__style" id="headstate{{state.person.ble_mac}}">
+							{%if state.move_flag == 0%}
+								预测状态：静止
+							{%elif state.move_flag == 4%}
+								预测状态：传感器断连
+							{%else%}
+								预测状态：离床
+							{%endif%}
+							</h4>
+						<hr>
+							<h4 class="head__style" id="headpos{{state.person.ble_mac}}">
+							位置：{{state.rpi.location}}房间
+							</h4>
+						<hr>						
+						<div align="right">
+								{%if state.person.ignore%}
+								<input type="checkbox" name="my-checkbox" unchecked id="{{state.person.ble_mac}}">
+								{%else%}
+								<input type="checkbox" name="my-checkbox" checked id="{{state.person.ble_mac}}">
+								{%endif%}
+						</div>
+					</div>
+				</div>
+			{%endfor%}
+		</div>
+	</div>
+	</div>	
+	</div>
+	
+	{%if warnings%}
+	<script>
+		toastr.options.positionClass='toast-top-full-width';
+		toastr.error("存在异常情况，请及时检查!");
+	</script>
+	{%endif%}
+
+	<script type="text/javascript">
+		$(function () {  
+         $("[name='my-checkbox']").bootstrapSwitch({  
+                onText:'监控',  
+                offText:'忽略',  
+        	 });  
+		});
+
+		$('input[name="my-checkbox"]').on('switchChange.bootstrapSwitch', function(event, state) {  
+			  console.log(state); // true | false  
+			  console.log(this.id);
+			  var postData={
+				  'id':this.id,
+				  'status':state,
+			  };
+			$.ajax({
+                url: '/change_status/',
+                type: 'POST',
+                data: postData,
+                dataType: 'JSON',
+				success:function (arg) {
+                    
+                }
+            });
+    	});  
+
+
+
+        var url="/ajax/";
+        $.ajaxSetup({async:true});
+		window.setInterval(function(){
+            var p1=document.getElementById("p1");
+            $.getJSON(url,function(json){
+                for(var key in json.state){
+                    state=json.state[key];
+                    var name=state[0];
+                    var room=state[1];
+                    var ignore=state[2];
+                    var s=state[3];
+					if(document.getElementById("item"+key)==null){
+						console.log("item"+key)
+						var person=document.createElement("div");
+						person.className="panel panel-info person__item";
+						person.id="item"+key;
+						p1.appendChild(person);
+						var head=document.createElement("div");
+						head.className="panel-heading";
+						person.appendChild(head);
+						var h=document.createElement('h4');
+						h.className="head__style";
+						h.id="head"+key;
+						h.innerHTML=name;
+						head.appendChild(h);
+						var pbody=document.createElement("div");
+						if(s==0){
+							pbody.className="panel-body";
+						}else if(s==4){
+							pbody.className="panel-body bg-warning";
+						}else{
+							pbody.className="panel-body bg-danger";
+						}
+						pbody="body"+key;
+						person.appendChild(pbody);
+						var hstate=document.createElement("h4");
+						hstate.className="head__style";
+						if(s==0){
+							hstate.innerHTML="预测状态：静止"
+						}else if(s==4){
+							hstate.innerHTML="预测状态：传感器断连"
+						}else{
+							hstate.innerHTML="预测状态：离床"
+						}
+						hstate.id="head"+key;
+						pbody.appendChild(hstate);
+						pbody.appendChild(document.createElement("hr"));
+						var hroom=document.createElement('h4');
+						hroom.className="head__style";
+						hroom.innerHTML="位置："+room+"房间";
+						hroom.id="headpos"+key;
+						pbody.appendChild(hroom);
+						pbody.appendChild(document.createElement("hr"));
+						var checkdiv=document.createElement("div");
+						checkdiv.align="right";
+						pbody.appendChild(checkdiv);
+						var check=document.createElement("input");
+						check.type="checkbox";
+						check.name="my-checkbox";
+						check.id=key;
+						check.checked=true;
+						if(ignore){
+							check.checked=false;
+						}
+						checkdiv.appendChild(check);
+               		}else{
+						var predict;
+						if(s==0){
+							predict="预测状态：静止";
+							document.getElementById("body"+key).className="panel-body"
+						}else if(s==4){
+							predict="预测状态：传感器断连";
+							document.getElementById("body"+key).className="panel-body bg-warning"
+						}else{
+							predict="预测状态：离床";
+							document.getElementById("body"+key).className="panel-body bg-danger"
+						}
+						document.getElementById("headstate"+key).innerHTML=predict;
+						document.getElementById("headpos"+key).innerHTML="位置："+room+"房间";
+						var check=document.getElementById(key);
+						if(ignore){
+							check.checked=false;
+						}else{
+							check.checked=true;
+						}
+					}				
+				}
+
+				if(json.warning){
+					toastr.options.positionClass='toast-top-full-width';
+					toastr.options.preventDuplicates = true;
+					toastr.error("存在异常情况，请及时检查!");
+				}else{
+					document.getElementById('warnpl').innerHTML="";
+				}
+
+				for(var key in json.warning){
+					var warning=json.warning[key];
+					var name=warning[0];
+					var location=warning[1];
+					var move_flag=warning[2];
+					var id=warning[3];
+					var wdiv=document.getElementById("warning"+id);
+					if(wdiv==null){
+						wdiv=document.createElement("div");
+						wdiv.id="warning"+id;
+						var string;
+						if(move_flag==4){
+							wdiv.className="panel panel-warning";
+							string="检测不到"+name+"老人的传感器，可能在"+location+"房间附近"
+						}else{
+							wdiv.className="panel panel-danger";
+							string=location+"房间的"+name+"老人可能发生离床行为"
+						}
+						document.getElementById("warnpl").appendChild(wdiv);
+						var wpanelhead=document.createElement("div");
+						wpanelhead.className="panel-heading";
+						wdiv.appendChild(wpanelhead);
+
+						var h=document.createElement("h4")
+						h.id="warninghead"+id;
+						h.className="head__style";
+						h.innerHTML=string;
+						wpanelhead.appendChild(h);
+
+					}else{
+						var string;
+						if(move_flag==4){
+							wdiv.className="panel panel-warning";
+							string="检测不到"+name+"老人的传感器，可能在"+location+"房间附近"
+						}else{
+							wdiv.className="panel panel-danger";
+							string=location+"房间的"+name+"老人可能发生离床行为"
+						}
+						document.getElementById("warninghead"+id).innerHTML=string;
+					}
+				}
+            });
+		},1000);
+	</script> 
+</body>
+</html>
